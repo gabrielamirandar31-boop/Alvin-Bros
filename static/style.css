@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  padding: 12px;
+  background: #1b1f3b;
+  color: #fff;
+  font-family: "Courier New", monospace;
+  text-align: center;
+}
+
+canvas {
+  width: 100%;
+  max-width: 960px;
+  background: #4a9bff;
+  image-rendering: pixelated;
+  border: 4px solid #0c0e22;
+}
+
+#controles {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+button {
+  font: bold 18px "Courier New", monospace;
+  padding: 16px 22px;
+  border: 0;
+  border-radius: 8px;
+  background: #ffcc33;
+  color: #1b1f3b;
+  touch-action: manipulation;
+}
+
+button:active {
+  background: #ff9d33;
+}
+
+#ranking {
+  display: inline-block;
+  text-align: left;
+}
