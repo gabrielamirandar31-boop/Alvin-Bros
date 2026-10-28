@@ -3,21 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Profe Jump</title>
+  <title>Profe vs. Miranda</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Profe Jump</h1>
+  <h1>Profe vs. Miranda</h1>
+  <p id="instrucciones">Controlas al profe: corre y salta para atrapar a Miranda.</p>
   <canvas id="c" width="320" height="180"></canvas>
 
   <div id="controles">
-    <button id="izq">◀</button>
-    <button id="der">▶</button>
-    <button id="saltar">SALTAR</button>
+    <button id="izq" aria-label="Mover a la izquierda">◀</button>
+    <button id="der" aria-label="Mover a la derecha">▶</button>
+    <button id="saltar" aria-label="Saltar">SALTAR</button>
   </div>
 
   <h2>Ranking</h2>
   <ol id="ranking"></ol>
+  <p id="estado-ranking" role="status" aria-live="polite"></p>
 
   <script src="{{ url_for('static', filename='juego.js') }}"></script>
 </body>

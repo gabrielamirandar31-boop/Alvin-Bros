@@ -8,15 +8,26 @@ body {
 }
 
 canvas {
+  display: block;
   width: 100%;
   max-width: 960px;
+  height: auto;
+  margin: 0 auto;
   background: #4a9bff;
-  image-rendering: pixelated;
+  image-rendering: auto;
   border: 4px solid #0c0e22;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 30%);
+}
+
+#instrucciones {
+  margin: 0 auto 12px;
+  color: #d7ddff;
 }
 
 #controles {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
   margin-top: 12px;
@@ -29,11 +40,14 @@ button {
   border-radius: 8px;
   background: #ffcc33;
   color: #1b1f3b;
+  cursor: pointer;
   touch-action: manipulation;
+  transition: background-color 120ms ease, transform 120ms ease;
 }
 
 button:active {
   background: #ff9d33;
+  transform: translateY(2px);
 }
 
 #ranking {
