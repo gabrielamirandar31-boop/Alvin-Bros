@@ -6,8 +6,8 @@ ctx.scale(3, 3);
 ctx.imageSmoothingEnabled = true;
 const W = 320, H = 180, WORLD = 1650;
 
-const NOMBRE = "PROFE";
-const NOMBRE2 = "MIRANDA";
+const NOMBRE_PROFE = "PROFE";
+const NOMBRE_MIRANDA = "MIRANDA";
 const FOTO1 = "/static/profe_suave.png";
 const FOTO2 = "/static/persona2.png";
 
@@ -32,14 +32,15 @@ const SEGUROS = [260, 700, 1100, 1500]; // lugares firmes donde reaparece la per
 
 const choca = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-let g, t = 0, teclas = {}, guardado = false;
+let g, t = 0, teclas = {}, guardado = false, personajeElegido = null;
 
 function nuevo() {
   guardado = false;
+  const esMiranda = personajeElegido === "miranda";
   g = {
-    x: 30, y: 100, vx: 0, vy: 0, tierra: false, dir: 1, pts: 0, vidas: 3,
+    x: esMiranda ? 260 : 30, y: 100, vx: 0, vy: 0, tierra: false, dir: 1, pts: 0, vidas: 3,
     invulnerable: 0, estado: "juego",
-    n: { x: 260, y: 100, vx: 0, vy: 0, tierra: false, dir: 1 },
+    n: { x: esMiranda ? 30 : 260, y: 100, vx: 0, vy: 0, tierra: false, dir: 1 },
     cerezas: CEREZAS.map(c => [...c]),
     enem: RANGOS.map(([a, b]) => ({ x: a + 20, y: 136, vx: 0.6, a, b })),
   };
@@ -51,11 +52,12 @@ function golpe() {
     g.estado = "fin";
     return;
   }
-  g.x = 30;
+  g.x = personajeElegido === "miranda" ? 260 : 30;
   g.y = 100;
   g.vx = 0;
   g.vy = 0;
-  g.n.x = Math.min(WORLD - 40, Math.max(260, g.n.x));
+  if (personajeElegido === "miranda") g.n.x = 30;
+  else g.n.x = Math.min(WORLD - 40, Math.max(260, g.n.x));
   g.n.y = 100;
   g.n.vx = 0;
   g.n.vy = 0;
@@ -87,11 +89,13 @@ function fisica(o) {
   return r;
 }
 
-// la persona perseguida: huye del profe y salta los huecos
-function moverPersona() {
+function moverRival() {
   const n = g.n;
   const dist = n.x - g.x;
-  const ax = Math.abs(dist) < 220 ? (dist >= 0 ? 1 : -1) : 0;
+  const profePersigue = personajeElegido === "miranda";
+  const ax = profePersigue
+    ? (dist >= 0 ? -1 : 1)
+    : (Math.abs(dist) < 220 ? (dist >= 0 ? 1 : -1) : 0);
   n.vx = ax * 1.6;
   if (ax) n.dir = ax;
   const pared = solidos.some(s =>
@@ -106,8 +110,12 @@ function moverPersona() {
   }
   n.vy = Math.min(n.vy + 0.4, 8);
   fisica(n);
-  if (n.y > H + 40) { // se cayó: reaparece adelante
-    n.x = SEGUROS.find(v => v > g.x + 100) ?? 1500;
+  if (n.y > H + 40) {
+    if (profePersigue) {
+      n.x = [...SEGUROS].reverse().find(v => v < g.x - 100) ?? 30;
+    } else {
+      n.x = SEGUROS.find(v => v > g.x + 100) ?? 1500;
+    }
     n.y = 100; n.vy = 0;
   }
 }
@@ -127,9 +135,22 @@ function paso() {
     return;
   }
 
-  moverPersona();
+  moverRival();
   const rn = { x: Math.floor(g.n.x), y: Math.floor(g.n.y), w: 14, h: 22 };
-  if (choca(r, rn)) { g.pts += 200; g.estado = "gana"; return; }
+  if (personajeElegido === "profe" && choca(r, rn)) {
+    g.pts += 200;
+    g.estado = "gana";
+    return;
+  }
+  if (personajeElegido === "miranda" && g.x >= WORLD - 14) {
+    g.pts += 200;
+    g.estado = "gana";
+    return;
+  }
+  if (personajeElegido === "miranda" && choca(r, rn)) {
+    golpe();
+    return;
+  }
 
   g.cerezas = g.cerezas.filter(c => {
     if (choca(r, R(c[0], c[1], 8, 8))) { g.pts += 10; return false; }
@@ -158,7 +179,7 @@ const rect = (color, x, y, w, h) => {
     const chaqueta = esProfe ? "#174897" : "#df8537";
     const luz = esProfe ? "#3d72ce" : "#f4ad58";
 
-    if (esProfe && g.invulnerable > 0 && Math.floor(t / 6) % 2) return;
+    if (personaje === g && g.invulnerable > 0 && Math.floor(t / 6) % 2) return;
     rect(chaqueta, x, y + 11, 14, 8);
     rect(luz, x + 1, y + 12, 4, 5);
     rect(luz, x + 9, y + 12, 4, 5);
@@ -234,15 +255,18 @@ const rect = (color, x, y, w, h) => {
       rect("#ffffff", e.x - camara + 4, e.y + 5, 2, 2);
       rect("#ffffff", e.x - camara + 10, e.y + 5, 2, 2);
     }
-    dibujarPersonaje(g.n, camara, f2, NOMBRE2, false);
-    dibujarPersonaje(g, camara, f1, NOMBRE, true);
+    const esMiranda = personajeElegido === "miranda";
+    dibujarPersonaje(g.n, camara, esMiranda ? f1 : f2,
+      esMiranda ? NOMBRE_PROFE : NOMBRE_MIRANDA, esMiranda);
+    dibujarPersonaje(g, camara, esMiranda ? f2 : f1,
+      esMiranda ? NOMBRE_MIRANDA : NOMBRE_PROFE, !esMiranda);
 
     ctx.fillStyle = "#141428";
     ctx.font = "bold 9px monospace";
     ctx.fillText(`PUNTOS ${g.pts}`, 8, 13);
     ctx.fillText(`VIDAS ${"♥ ".repeat(g.vidas)}`, 8, 25);
     ctx.textAlign = "right";
-    ctx.fillText(`ATRAPA A ${NOMBRE2}`, W - 8, 13);
+    ctx.fillText(esMiranda ? "ESCAPA DEL PROFE" : `ATRAPA A ${NOMBRE_MIRANDA}`, W - 8, 13);
     ctx.textAlign = "left";
 
     if (g.estado !== "juego") {
@@ -250,7 +274,10 @@ const rect = (color, x, y, w, h) => {
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "center";
       ctx.font = "bold 14px monospace";
-      ctx.fillText(g.estado === "gana" ? `¡ATRAPASTE A ${NOMBRE2}!` : "¡SE ACABARON LAS VIDAS!", W / 2, 82);
+      const mensaje = g.estado === "gana"
+        ? (esMiranda ? "¡ESCAPASTE DEL PROFE!" : `¡ATRAPASTE A ${NOMBRE_MIRANDA}!`)
+        : (esMiranda ? "¡EL PROFE TE ATRAPÓ!" : "¡SE ACABARON LAS VIDAS!");
+      ctx.fillText(mensaje, W / 2, 82);
       ctx.font = "9px monospace";
       ctx.fillText("Pulsa R o toca el juego para reiniciar", W / 2, 101);
       ctx.textAlign = "left";
@@ -309,7 +336,7 @@ const rect = (color, x, y, w, h) => {
   function cambiarTecla(evento, presionada) {
     const tecla = evento.key.toLowerCase();
     teclas[tecla] = presionada;
-    if (presionada && tecla === "r" && g.estado !== "juego") nuevo();
+    if (presionada && tecla === "r" && personajeElegido && g.estado !== "juego") nuevo();
     if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(tecla)) evento.preventDefault();
   }
 
@@ -333,15 +360,31 @@ const rect = (color, x, y, w, h) => {
     boton.addEventListener("lostpointercapture", soltar);
   }
 
-  cv.addEventListener("click", () => {
-    if (g.estado !== "juego") nuevo();
+  document.querySelectorAll("[data-personaje]").forEach(boton => {
+    boton.addEventListener("click", () => {
+      personajeElegido = boton.dataset.personaje;
+      document.getElementById("seleccion-personaje").hidden = true;
+      document.getElementById("instrucciones").hidden = false;
+      cv.hidden = false;
+      document.getElementById("controles").hidden = false;
+      document.getElementById("instrucciones").textContent =
+        personajeElegido === "miranda"
+          ? "Controlas a Miranda: corre y salta para escapar del profe y llegar al final."
+          : "Controlas al profe: corre y salta para atrapar a Miranda.";
+      nuevo();
+    });
   });
 
-  nuevo();
+  cv.addEventListener("click", () => {
+    if (personajeElegido && g.estado !== "juego") nuevo();
+  });
+
   cargarRanking();
   setInterval(() => {
     t++;
-    if (g.estado === "juego") paso();
-    else if (!guardado) guardarPuntaje();
-    dibujar();
+    if (personajeElegido) {
+      if (g.estado === "juego") paso();
+      else if (!guardado) guardarPuntaje();
+      dibujar();
+    }
   }, 1000 / 60);

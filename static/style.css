@@ -25,6 +25,22 @@ canvas {
   color: #d7ddff;
 }
 
+#opciones-personaje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 16px auto;
+}
+
+#opciones-personaje button {
+  min-width: 180px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 #controles {
   display: flex;
   flex-wrap: wrap;

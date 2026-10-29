@@ -8,10 +8,17 @@
 </head>
 <body>
   <h1>Profe vs. Miranda</h1>
-  <p id="instrucciones">Controlas al profe: corre y salta para atrapar a Miranda.</p>
-  <canvas id="c" width="320" height="180"></canvas>
+  <section id="seleccion-personaje" aria-labelledby="titulo-seleccion">
+    <h2 id="titulo-seleccion">¿A quién quieres controlar?</h2>
+    <div id="opciones-personaje">
+      <button type="button" data-personaje="profe">Ser el profe</button>
+      <button type="button" data-personaje="miranda">Ser Miranda</button>
+    </div>
+  </section>
+  <p id="instrucciones" hidden></p>
+  <canvas id="c" width="320" height="180" hidden></canvas>
 
-  <div id="controles">
+  <div id="controles" hidden>
     <button id="izq" aria-label="Mover a la izquierda">◀</button>
     <button id="der" aria-label="Mover a la derecha">▶</button>
     <button id="saltar" aria-label="Saltar">SALTAR</button>
